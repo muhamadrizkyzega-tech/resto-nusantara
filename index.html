@@ -14,22 +14,120 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
-<body class="antialiased selection:bg-orange-200">
+<body class="antialiased selection:bg-orange-200 bg-slate-50">
 
     <!-- TOMBOL SWITCH USER / ADMIN DI POJOK KANAN ATAS -->
     <div class="fixed top-4 right-4 z-50">
-        <button onclick="toggleAdminMode()" id="btn-switch-role" class="bg-white/90 hover:bg-white text-gray-800 font-bold px-4 py-2.5 rounded-full shadow-lg border border-gray-200 flex items-center gap-2 text-xs backdrop-blur-md transition active:scale-95">
-            <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+        <button onclick="openAdminLoginModal()" id="btn-switch-role" class="bg-white/90 hover:bg-white text-slate-800 font-bold px-4 py-2.5 rounded-full shadow-lg border border-slate-200 flex items-center gap-2 text-xs backdrop-blur-md transition active:scale-95">
+            <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
             <span id="role-text-label">Mode: Pelanggan</span>
         </button>
     </div>
 
-    <!-- ============================================== -->
-    <!-- 1. LAYAR UTAMA PELANGGAN (Full Screen Layout)  -->
-    <!-- ============================================== -->
+    <!-- MODAL LOGIN ADMIN (Username: zrix | Password: 11111111) -->
+    <div id="modal-admin-login" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hide fade-in">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl relative">
+            <button onclick="closeAdminLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <h3 class="text-xl font-extrabold text-slate-900">Login Administrator</h3>
+                <p class="text-xs text-slate-500 mt-1">Masukkan Username & Password Admin</p>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-slate-600 block mb-1">Username</label>
+                    <input type="text" id="admin-username" placeholder="zrix" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-600 block mb-1">Password</label>
+                    <input type="password" id="admin-password" placeholder="11111111" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm">
+                </div>
+                <button onclick="submitAdminLogin()" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold p-3.5 rounded-xl shadow-md transition active:scale-95 text-sm">Masuk Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL GREETING ANIMASI PELANGGAN -->
+    <div id="modal-greeting" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-6 hide">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl greeting-pop">
+            <div class="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-orange-200 pulse-glow">
+                <span class="text-4xl animate-bounce">👋</span>
+            </div>
+            <p class="text-xs font-bold text-orange-600 uppercase tracking-widest mb-1">Selamat Datang!</p>
+            <h3 class="text-2xl font-extrabold text-slate-900 mb-2" id="greeting-name-display">Halo</h3>
+            <p class="text-xs text-slate-500 font-medium mb-6 leading-relaxed">Selamat menikmati hidangan lezat otentik racikan koki terbaik Resto Nusantara.</p>
+            <button onclick="closeGreetingModal()" class="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-black transition active:scale-95 text-sm">Mulai Pilih Menu 🍛</button>
+        </div>
+    </div>
+
+    <!-- WIDGET CHAT BOT AUTOMATION -->
+    <div class="fixed bottom-6 right-6 z-40">
+        <button onclick="toggleHelpModal()" class="bg-gradient-to-r from-orange-500 to-amber-500 text-white p-3.5 rounded-full shadow-2xl flex items-center gap-2 font-bold text-xs hover:scale-105 transition active:scale-95">
+            <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+            <span>Butuh Bantuan?</span>
+        </button>
+    </div>
+
+    <!-- MODAL BANTUAN FAQ & PESAN KEMBALI -->
+    <div id="modal-help" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4 hide fade-in">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl max-h-[85vh] flex flex-col relative">
+            <button onclick="toggleHelpModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div class="flex items-center gap-3 mb-4 border-b border-slate-100 pb-3">
+                <div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-lg">🤖</div>
+                <div>
+                    <h3 class="font-extrabold text-slate-900 text-base">Asisten Resto Nusantara</h3>
+                    <p class="text-xs text-slate-400 font-medium">Bantuan Otomatis & Pertanyaan</p>
+                </div>
+            </div>
+            
+            <div class="overflow-y-auto space-y-3 pr-1 text-xs mb-4 flex-grow" id="help-chat-box">
+                <div class="bg-orange-50 p-3 rounded-2xl text-slate-700 border border-orange-100">
+                    Halo! Ada yang bisa kami bantu? Klik salah satu pertanyaan di bawah:
+                </div>
+                <div class="space-y-2">
+                    <button onclick="answerFaq(1)" class="w-full text-left bg-slate-50 hover:bg-orange-50 p-3 rounded-xl border border-slate-200 font-bold text-slate-700 transition">❓ Bagaimana cara memesan makanan?</button>
+                    <button onclick="answerFaq(2)" class="w-full text-left bg-slate-50 hover:bg-orange-50 p-3 rounded-xl border border-slate-200 font-bold text-slate-700 transition">❓ Metode pembayaran apa saja yang tersedia?</button>
+                    <button onclick="answerFaq(3)" class="w-full text-left bg-slate-50 hover:bg-orange-50 p-3 rounded-xl border border-slate-200 font-bold text-slate-700 transition">❓ Berapa lama estimasi pembuatan makanan?</button>
+                    <button onclick="answerFaq(4)" class="w-full text-left bg-slate-50 hover:bg-orange-50 p-3 rounded-xl border border-slate-200 font-bold text-slate-700 transition">❓ Apakah ada Voucher Diskon?</button>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-100 pt-3">
+                <p class="text-xs text-slate-400 font-bold mb-2">Belum menemukan jawaban?</p>
+                <button onclick="openEmailOwnerForm()" class="w-full bg-slate-900 hover:bg-black text-white font-bold p-3 rounded-xl shadow transition active:scale-95 text-xs flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    Kirim Pesan ke Admin (Tabel 3)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL FORM PESAN KE ADMIN -->
+    <div id="modal-email-owner" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hide fade-in">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl relative">
+            <button onclick="closeEmailOwnerForm()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <h3 class="text-lg font-extrabold text-slate-900 mb-1">Kirim Bantuan Ke Admin</h3>
+            <p class="text-xs text-slate-500 mb-4">Pesan Anda akan tersimpan di Realtime Database.</p>
+            <div class="space-y-3">
+                <input type="text" id="help-user-name" placeholder="Nama Anda" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500">
+                <textarea id="help-user-msg" rows="3" placeholder="Tuliskan pertanyaan / kendala Anda..." class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500"></textarea>
+                <button onclick="sendEmailToOwner()" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold p-3 rounded-xl shadow transition text-xs">Kirim Pesan Database</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LAYAR UTAMA PELANGGAN -->
     <div id="customer-app" class="max-w-md mx-auto bg-white min-h-screen shadow-2xl relative overflow-hidden pb-32">
         
-        <!-- SCREEN 0: WELCOME & TIPE PESANAN -->
+        <!-- WELCOME SCREEN -->
         <div id="screen-welcome" class="relative h-screen flex flex-col items-center justify-end bg-cover bg-center fade-in" 
              style="background-image: url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80');">
             <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent"></div>
@@ -56,7 +154,7 @@
             </div>
         </div>
 
-        <!-- SCREEN 1: INPUT INFO -->
+        <!-- LOGIN / INPUT INFO -->
         <div id="screen-login" class="hide p-6 mt-12 fade-in">
             <button onclick="backToWelcome()" class="text-slate-500 hover:text-slate-900 font-semibold mb-6 flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
@@ -75,7 +173,7 @@
             </div>
         </div>
 
-        <!-- SCREEN 2: MENU UTAMA -->
+        <!-- MENU UTAMA -->
         <div id="screen-menu" class="hide fade-in">
             <div class="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-6 rounded-b-3xl shadow-lg flex justify-between items-center sticky top-0 z-20">
                 <div>
@@ -87,7 +185,7 @@
                 </div>
             </div>
 
-            <!-- Tab Kategori Menu -->
+            <!-- TAB KATEGORI -->
             <div class="flex overflow-x-auto no-scrollbar gap-2 px-5 py-4 bg-white shadow-sm sticky top-[84px] z-20">
                 <button onclick="changeCategory('food')" id="tab-food" class="px-5 py-2.5 rounded-full font-bold text-sm transition bg-orange-600 text-white shadow-md whitespace-nowrap">Makanan Utama</button>
                 <button onclick="changeCategory('snack')" id="tab-snack" class="px-5 py-2.5 rounded-full font-bold text-sm transition bg-slate-100 text-slate-500 hover:bg-slate-200 whitespace-nowrap">Cemilan & Dessert</button>
@@ -101,14 +199,14 @@
                     <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Pesanan</p>
                     <p class="text-lg font-extrabold text-slate-900" id="cart-total">Rp 0</p>
                 </div>
-                <button onclick="showPaymentMethods()" class="bg-orange-600 text-white px-6 py-3.5 rounded-2xl font-bold flex gap-3 items-center hover:bg-orange-700 shadow-lg transition active:scale-95">
+                <button id="btn-cart-pay" onclick="showPaymentMethods()" class="bg-orange-600 text-white px-6 py-3.5 rounded-2xl font-bold flex gap-3 items-center hover:bg-orange-700 shadow-lg transition active:scale-95">
                     Bayar
-                    <span id="cart-count" class="bg-white text-orange-600 text-xs px-2.5 py-1 rounded-full font-bold ml-1">0</span>
+                    <span id="cart-count" class="bg-white text-orange-600 text-xs px-2.5 py-1 rounded-full font-bold ml-1 transition-all">0</span>
                 </button>
             </div>
         </div>
 
-        <!-- SCREEN 3: PILIH METODE PEMBAYARAN -->
+        <!-- METODE PEMBAYARAN & KODE VOUCHER PROMO -->
         <div id="screen-payment-methods" class="hide p-6 bg-[#F8FAFC] min-h-screen fade-in relative pb-28">
             <button onclick="backToMenu()" class="text-slate-500 hover:text-slate-900 font-semibold mb-6 flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
@@ -116,9 +214,19 @@
             </button>
             
             <h2 class="text-xl font-extrabold mb-1 text-slate-900">Metode Pembayaran</h2>
-            <p class="text-sm text-slate-500 mb-6 font-medium">Total Tagihan: <span id="pay-total-summary" class="font-bold text-orange-600">Rp 0</span></p>
+            <p class="text-sm text-slate-500 mb-4 font-medium">Total Tagihan: <span id="pay-total-summary" class="font-bold text-orange-600">Rp 0</span></p>
 
-            <!-- QRIS -->
+            <!-- FITUR KODE PROMO (Tabel 4) -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-6">
+                <label class="text-xs font-bold text-slate-600 block mb-2">🎁 Punya Kode Promo / Voucher?</label>
+                <div class="flex gap-2">
+                    <input type="text" id="input-promo-code" placeholder="Contoh: NUSANTARA20" class="w-full p-3 rounded-xl border border-slate-200 uppercase font-bold text-xs bg-slate-50 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                    <button onclick="applyPromoCode()" class="bg-slate-900 hover:bg-black text-white px-4 py-3 rounded-xl font-bold text-xs shadow transition active:scale-95 whitespace-nowrap">Gunakan</button>
+                </div>
+                <p id="promo-status-msg" class="text-[11px] font-bold mt-2 hide"></p>
+            </div>
+
+            <!-- METODE QRIS -->
             <div class="payment-option bg-white rounded-2xl border border-slate-100 p-4 mb-4 flex items-center justify-between cursor-pointer transition shadow-sm" onclick="selectPayment('QRIS', 'qris')">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-6 flex items-center justify-center font-extrabold text-xs bg-red-600 text-white rounded px-1 tracking-tighter">QRIS</div>
@@ -151,51 +259,18 @@
                 </div>
             </div>
 
-            <!-- Transfer Bank -->
-            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 mt-6">Transfer Bank (Virtual Account)</h3>
-            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden mb-4">
-                <div class="payment-option p-4 border-b border-slate-100 flex items-center justify-between cursor-pointer transition" onclick="selectPayment('BCA Virtual Account', 'va')">
-                    <div class="flex items-center gap-4"><span class="font-extrabold text-blue-800 text-sm">BCA</span><span class="font-bold text-sm">BCA VA</span></div>
-                    <div class="radio-circle w-5 h-5 rounded-full border-2 border-slate-300"></div>
-                </div>
-                <div class="payment-option p-4 border-b border-slate-100 flex items-center justify-between cursor-pointer transition" onclick="selectPayment('Mandiri Virtual Account', 'va')">
-                    <div class="flex items-center gap-4"><span class="font-extrabold text-yellow-600 text-sm">mandırı</span><span class="font-bold text-sm">Mandiri VA</span></div>
-                    <div class="radio-circle w-5 h-5 rounded-full border-2 border-slate-300"></div>
-                </div>
-                <div class="payment-option p-4 border-b border-slate-100 flex items-center justify-between cursor-pointer transition" onclick="selectPayment('BRI Briva', 'va')">
-                    <div class="flex items-center gap-4"><span class="font-extrabold text-blue-600 text-sm">BRI</span><span class="font-bold text-sm">BRI Briva</span></div>
-                    <div class="radio-circle w-5 h-5 rounded-full border-2 border-slate-300"></div>
-                </div>
-                <div class="payment-option p-4 border-b border-slate-100 flex items-center justify-between cursor-pointer transition" onclick="selectPayment('BNI Virtual Account', 'va')">
-                    <div class="flex items-center gap-4"><span class="font-extrabold text-orange-500 text-sm">BNI</span><span class="font-bold text-sm">BNI VA</span></div>
-                    <div class="radio-circle w-5 h-5 rounded-full border-2 border-slate-300"></div>
-                </div>
-            </div>
-
-            <!-- Kartu Kredit -->
-            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 mt-6">Kartu Kredit / Debit</h3>
-            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden mb-8">
-                <div class="payment-option p-4 flex items-center justify-between cursor-pointer transition" onclick="selectPayment('Kartu Kredit / Debit', 'credit')">
-                    <div class="flex items-center gap-3">
-                        <span class="font-extrabold italic text-blue-700 text-base">VISA</span>
-                        <span class="font-extrabold italic text-red-600 text-base">MasterCard</span>
-                    </div>
-                    <div class="radio-circle w-5 h-5 rounded-full border-2 border-slate-300"></div>
-                </div>
-            </div>
-
             <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-4 glass-panel z-40 rounded-t-3xl">
                 <button id="btn-lanjutkan" onclick="proceedToPaymentAction()" disabled class="w-full bg-slate-200 text-slate-400 font-bold p-4 rounded-2xl transition shadow-sm">Pilih Metode Pembayaran Dulu</button>
             </div>
         </div>
 
-        <!-- SCREEN 3B: INSTRUKSI PEMBAYARAN -->
+        <!-- ACTION PEMBAYARAN -->
         <div id="screen-payment-action" class="hide p-6 text-center fade-in bg-white h-full relative min-h-screen">
             <button onclick="backToPaymentMethods()" class="text-left text-slate-500 hover:text-slate-900 font-semibold mb-8 w-full flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                 Ubah Metode
             </button>
-            <p class="text-sm text-slate-500 font-medium uppercase tracking-wider">Total Pembayaran</p>
+            <p class="text-sm text-slate-500 font-medium uppercase tracking-wider">Total Pembayaran Akhir</p>
             <h2 class="text-3xl font-extrabold mb-2 text-slate-900" id="final-pay-total">Rp 0</h2>
             <p class="text-sm font-bold text-orange-600 bg-orange-50 inline-block px-3 py-1 rounded-full mb-6" id="selected-method-label">Metode</p>
             
@@ -203,25 +278,31 @@
             <button onclick="processFinalPayment()" class="w-full bg-slate-900 hover:bg-black text-white font-bold p-4 rounded-xl shadow-lg transition active:scale-95">Saya Sudah Bayar</button>
         </div>
 
-        <!-- SCREEN 4: TIMER & WAITING -->
-        <div id="screen-waiting" class="hide p-8 text-center mt-12 fade-in h-full flex flex-col items-center justify-center">
-            <h2 class="text-2xl font-extrabold text-slate-900 mb-2">Pesanan Sedang Diproses</h2>
-            <p class="text-slate-500 font-medium mb-10 text-sm">Koki andalan kami sedang meracik pesanan Anda.</p>
+        <!-- WAITING TIMER ANIMATED RING -->
+        <div id="screen-waiting" class="hide p-8 text-center mt-6 fade-in h-full flex flex-col items-center justify-center">
+            <div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                <span class="text-3xl">👨‍🍳</span>
+            </div>
+            <h2 class="text-2xl font-extrabold text-slate-900 mb-1">Pesanan Sedang Diproses</h2>
+            <p class="text-slate-500 font-medium mb-8 text-xs">Koki andalan kami sedang meracik pesanan Anda.</p>
             
-            <div class="relative flex items-center justify-center w-48 h-48 mx-auto mb-10">
-                <div class="absolute inset-0 bg-orange-100 rounded-full pulse-circle"></div>
-                <div class="absolute inset-2 bg-white rounded-full shadow-inner flex flex-col items-center justify-center z-10">
-                    <span class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">Estimasi</span>
-                    <span class="text-4xl font-extrabold text-orange-600" id="timer-display">15:00</span>
-                    <span class="text-xs font-bold text-slate-400 mt-1">Menit</span>
+            <div class="relative flex items-center justify-center w-52 h-52 mx-auto mb-8">
+                <svg class="w-full h-full transform -rotate-90">
+                    <circle cx="104" cy="104" r="90" stroke="#f1f5f9" stroke-width="12" fill="transparent" />
+                    <circle id="timer-progress-ring" cx="104" cy="104" r="90" stroke="#ea580c" stroke-width="12" stroke-dasharray="565" stroke-dashoffset="0" stroke-linecap="round" fill="transparent" class="transition-all duration-1000" />
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Estimasi</span>
+                    <span class="text-4xl font-extrabold text-slate-900" id="timer-display">15:00</span>
+                    <span class="text-[10px] font-bold text-orange-600 mt-1 uppercase">Sedang Memasak</span>
                 </div>
             </div>
 
-            <div class="bg-slate-50 w-full p-4 rounded-2xl border border-slate-100 mb-6 text-left">
-                <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Status Dapur</p>
+            <div class="bg-slate-50 w-full p-4 rounded-2xl border border-slate-100 mb-6 text-left shadow-sm">
+                <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-2">Status Dapur</p>
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center shadow-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    <div class="w-9 h-9 rounded-full bg-orange-500 text-white flex items-center justify-center shadow-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                     </div>
                     <div>
                         <p class="font-bold text-slate-800 text-sm" id="waiting-status-text">Dimasak di Dapur Cabang Sutomo</p>
@@ -232,44 +313,125 @@
             <p class="text-xs text-slate-400 italic">Halaman ini akan otomatis beralih saat pesanan selesai.</p>
         </div>
 
-        <!-- SCREEN 5: FEEDBACK / RATING -->
-        <div id="screen-feedback" class="hide p-8 text-center mt-12 fade-in">
-            <div class="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+        <!-- RATING & FEEDBACK -->
+        <div id="screen-feedback" class="hide p-8 text-center mt-6 fade-in">
+            <div class="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm pulse-glow">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
             </div>
-            <h2 class="text-2xl font-extrabold mb-2 text-slate-900" id="feedback-title">Pesanan Selesai!</h2>
-            <p class="text-slate-500 mb-8 font-medium text-sm" id="feedback-subtitle">Terima kasih telah berkunjung.</p>
+            <h2 class="text-2xl font-extrabold mb-1 text-slate-900" id="feedback-title">Pesanan Selesai!</h2>
+            <p class="text-slate-500 mb-6 font-medium text-xs" id="feedback-subtitle">Terima kasih telah berkunjung.</p>
             
             <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] mb-8">
-                <h3 class="font-bold text-slate-800 mb-4">Beri Penilaian Pelayanan Kami</h3>
+                <h3 class="font-bold text-slate-800 mb-4 text-sm">Beri Penilaian Pelayanan Kami (Tabel 2)</h3>
                 <div class="flex justify-center gap-2 mb-6 star-rating text-slate-300">
-                    <svg onclick="rateStar(1)" class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                    <svg onclick="rateStar(2)" class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                    <svg onclick="rateStar(3)" class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                    <svg onclick="rateStar(4)" class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                    <svg onclick="rateStar(5)" class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                    <svg onclick="rateStar(1)" class="w-10 h-10 transition hover:scale-110" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                    <svg onclick="rateStar(2)" class="w-10 h-10 transition hover:scale-110" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                    <svg onclick="rateStar(3)" class="w-10 h-10 transition hover:scale-110" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                    <svg onclick="rateStar(4)" class="w-10 h-10 transition hover:scale-110" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                    <svg onclick="rateStar(5)" class="w-10 h-10 transition hover:scale-110" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
                 </div>
-                <textarea placeholder="Tulis masukan Anda di sini..." class="w-full p-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 transition mb-3 text-sm"></textarea>
+                <textarea id="feedback-comment" placeholder="Tulis masukan Anda di sini..." class="w-full p-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 transition mb-3 text-sm"></textarea>
                 <button onclick="submitFeedback()" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold p-3.5 rounded-xl shadow-md transition active:scale-95">Kirim Ulasan</button>
             </div>
         </div>
 
     </div>
 
-    <!-- ============================================== -->
-    <!-- 2. LAYAR KITCHEN / ADMIN (Full Dashboard)      -->
-    <!-- ============================================== -->
-    <div id="kitchen-app" class="hide max-w-6xl mx-auto p-8 mt-12 fade-in">
-        <div class="flex items-center gap-4 mb-10 border-b border-slate-200 pb-6">
-            <div class="w-14 h-14 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+    <!-- DASHBOARD ADMIN (KELOLA 5 TABEL DATABASE) -->
+    <div id="kitchen-app" class="hide max-w-6xl mx-auto p-6 md:p-8 mt-12 fade-in">
+        <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-8 border-b border-slate-200 pb-6">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-extrabold text-slate-900">Dashboard Master Admin</h1>
+                    <p class="text-slate-500 font-medium mt-1">Manajemen 5 Tabel Realtime Database Firebase</p>
+                </div>
             </div>
-            <div>
-                <h1 class="text-3xl font-extrabold text-slate-900">Dashboard Admin & Dapur</h1>
-                <p class="text-slate-500 font-medium mt-1">Cabang Sutomo • Manajemen Pesanan Real-Time</p>
+            <button onclick="logoutAdmin()" class="self-start md:self-auto bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                Keluar Mode Admin
+            </button>
+        </div>
+
+        <!-- STATISTIK KEUANGAN -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Pendapatan</p>
+                    <h3 class="text-2xl font-extrabold text-slate-900" id="dash-total-revenue">Rp 0</h3>
+                    <p class="text-[10px] text-green-600 font-semibold mt-1">▲ Realtime dari transaksi</p>
+                </div>
+                <div class="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center font-extrabold">💰</div>
+            </div>
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Jumlah Pesanan</p>
+                    <h3 class="text-2xl font-extrabold text-slate-900" id="dash-total-orders">0 Transaksi</h3>
+                    <p class="text-[10px] text-blue-600 font-semibold mt-1">Pesanan Terdaftar</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center font-extrabold">📦</div>
+            </div>
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Keuntungan Bersih (Est.)</p>
+                    <h3 class="text-2xl font-extrabold text-orange-600" id="dash-monthly-profit">Rp 0</h3>
+                    <p class="text-[10px] text-orange-500 font-semibold mt-1">Margin Profit ~35%</p>
+                </div>
+                <div class="w-12 h-12 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center font-extrabold">📈</div>
             </div>
         </div>
-        <div id="kitchen-orders" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+        <!-- TABEL 5: FITUR TAMBAH MENU BARU LANGSUNG KE DATABASE -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm mb-10">
+            <h2 class="text-lg font-extrabold text-slate-900 mb-4 flex items-center gap-2">
+                <span>➕ Tambah Menu Baru ke Database (Tabel 5: /menu)</span>
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                <input type="text" id="add-menu-name" placeholder="Nama Makanan/Minuman" class="p-3 rounded-xl border border-slate-200 text-xs">
+                <input type="number" id="add-menu-price" placeholder="Harga (Contoh: 15000)" class="p-3 rounded-xl border border-slate-200 text-xs">
+                <select id="add-menu-type" class="p-3 rounded-xl border border-slate-200 text-xs">
+                    <option value="food">Makanan Utama (food)</option>
+                    <option value="snack">Cemilan & Dessert (snack)</option>
+                    <option value="drink">Minuman (drink)</option>
+                </select>
+                <input type="text" id="add-menu-img" placeholder="URL Foto Gambar Unsplash" class="p-3 rounded-xl border border-slate-200 text-xs">
+            </div>
+            <button onclick="addNewMenuToDb()" class="mt-4 bg-orange-600 hover:bg-orange-700 text-white font-bold px-5 py-3 rounded-xl text-xs shadow transition active:scale-95">Simpan Menu Baru ke Firebase</button>
+        </div>
+
+        <!-- TABEL 1: PESANAN MASUK -->
+        <h2 class="text-xl font-extrabold text-slate-900 mb-4 flex items-center gap-2">
+            <span>Daftar Pesanan Masuk (Tabel 1: /orders)</span>
+            <span class="text-xs font-bold bg-orange-100 text-orange-600 px-3 py-1 rounded-full animate-pulse">Live Sync</span>
+        </h2>
+        <div id="kitchen-orders" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <!-- TABEL 3: KOTAK MASUK BANTUAN PELANGGAN -->
+            <div>
+                <h2 class="text-xl font-extrabold text-slate-900 mb-4">📥 Pesan Bantuan Pelanggan (Tabel 3: /messages)</h2>
+                <div id="admin-messages-list" class="space-y-3"></div>
+            </div>
+            
+            <!-- TABEL 4: MANAJEMEN VOUCHER KODE PROMO -->
+            <div>
+                <h2 class="text-xl font-extrabold text-slate-900 mb-4">🎫 Kelola Voucher Promo (Tabel 4: /promos)</h2>
+                <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm mb-4">
+                    <div class="flex gap-2 mb-3">
+                        <input type="text" id="new-promo-code" placeholder="Kode (Misal: DISKON10)" class="w-1/2 p-3 rounded-xl border border-slate-200 uppercase font-bold text-xs">
+                        <input type="number" id="new-promo-discount" placeholder="Diskon % (Misal: 20)" class="w-1/2 p-3 rounded-xl border border-slate-200 text-xs">
+                    </div>
+                    <button onclick="addNewPromoToDb()" class="w-full bg-slate-900 hover:bg-black text-white font-bold p-3 rounded-xl text-xs shadow transition">Buat Voucher Promo Baru</button>
+                </div>
+                <div id="admin-promos-list" class="space-y-2"></div>
+            </div>
+        </div>
+
+        <!-- TABEL 2: ULASAN PELANGGAN -->
+        <h2 class="text-xl font-extrabold text-slate-900 mb-4">⭐ Ulasan & Rating Pelanggan (Tabel 2: /feedbacks)</h2>
+        <div id="feedback-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
     </div>
 
     <!-- Script JS Terpisah -->
