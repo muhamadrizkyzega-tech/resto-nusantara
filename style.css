@@ -9,13 +9,17 @@ body {
 }
 
 .glass-panel { 
-    background: rgba(255, 255, 255, 0.92); 
+    background: rgba(255, 255, 255, 0.94); 
     backdrop-filter: blur(16px); 
     border-top: 1px solid #E2E8F0; 
 }
 
 .food-card { 
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+}
+
+.food-card:hover {
+    transform: translateY(-2px);
 }
 
 .food-card:active { 
@@ -61,23 +65,48 @@ body {
     border-color: #fed7aa; 
 }
 
-/* Timer Pulse */
-.pulse-circle { 
-    animation: pulse 2s infinite; 
+/* Timer Pulse & Glow */
+.pulse-glow { 
+    animation: pulseGlow 2s infinite; 
 }
 
-@keyframes pulse {
-    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.7); }
-    70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(234, 88, 12, 0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(234, 88, 12, 0); }
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.5); }
+    70% { box-shadow: 0 0 0 15px rgba(234, 88, 12, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0); }
 }
 
-/* Rating Stars */
+/* Pop Cart Animation */
+.pop-bounce {
+    animation: popBounce 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popBounce {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.4); }
+    100% { transform: scale(1); }
+}
+
+/* Rating Stars Animation */
 .star-rating svg { 
     cursor: pointer; 
-    transition: color 0.2s; 
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
 }
 
 .star-rating svg.active { 
     color: #f59e0b; 
+}
+
+.star-bounce {
+    transform: scale(1.2) rotate(12deg);
+}
+
+/* Greeting Animation */
+.greeting-pop {
+    animation: greetingPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes greetingPop {
+    0% { opacity: 0; transform: scale(0.8); }
+    100% { opacity: 1; transform: scale(1); }
 }
